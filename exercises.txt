@@ -124,13 +124,13 @@ int main(){
 	
 	uint32_t val_to_find = array[3];
 	
-	// int32_t val_index = binary_search(array, ARRAY_LENGTH, val_to_find);
-	// if(val_index < 0){
-	// 	printf("failed to find value\n");
-	// }
-	// else{
-	// 	printf("found values is %i, value we were searching is %i", array[val_index], val_to_find);
-	// }
+	int32_t val_index = binary_search(array, ARRAY_LENGTH, val_to_find);
+	if(val_index < 0){
+		printf("failed to find value\n");
+	}
+	else{
+		printf("found values is %i, value we were searching is %i", array[val_index], val_to_find);
+	}
 
 	//*****************************************************/
 	//============= TWO CRYSTAL BALLS PROBLEM =============/
