@@ -1,0 +1,176 @@
+// Making binary search algorithm which is log(n)
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <math.h>
+
+#define ARRAY_LENGTH 7
+#define RAND_SEED 17
+
+
+void init_random(uint8_t * array, const uint32_t length)
+{
+	srand(RAND_SEED);
+	
+	for(uint32_t i = 0 ; i < length ; ++i)
+	{
+		array[i] = rand();
+	}
+}
+
+void init_Nzeros_Mones(uint8_t * array, const uint32_t length, uint32_t starting_index_of_ones)
+{
+	for(uint32_t i = 0 ; i < starting_index_of_ones ; ++i)
+	{
+		array[i] = 0;
+	}
+	
+	for(uint32_t i = starting_index_of_ones ; i < length ; ++i)
+	{
+		array[i] = 1;
+	}
+}
+
+
+void bubble_sort(uint8_t * array, const uint32_t length)
+{
+	bool sorted = true;
+	do{
+		sorted = true;
+		for(uint32_t i = 0 ; i < length - 1 ; ++i)
+		{
+			/* swap if larger */ 
+			if(array[i] > array[i + 1])
+			{
+				uint8_t tmp = array[i + 1];
+				array[i + 1] = array[i];
+				array[i] = tmp;
+				sorted = false;
+			}
+			
+		}
+	}while(!sorted);
+}
+
+int32_t binary_search(const uint8_t * array, const uint32_t length, uint8_t val)
+{
+	uint8_t low = 0;
+	uint8_t high = length;
+	
+	do
+	{	
+		uint8_t index = floor((low + high)/2);
+		if(val == array[index])
+		{
+			return index;
+		}
+		/* check if val is less than then value under the index*/
+		else if(val < array[index])
+		{
+			high = index;
+		}
+		else
+		{
+			low = index + 1;
+		}
+	
+	}while(low < high);
+	return -1;  
+}
+
+void print_array(const uint8_t * array, const uint32_t length)
+{
+	for(uint32_t i = 0; i < length ; ++i)
+	{
+		printf("%u\n",array[i]);
+	}
+}
+
+int32_t two_crystal_balls(const uint8_t * break_table, uint32_t length)
+{
+	// define step we can jump
+	uint32_t step = sqrt(length);
+
+	uint32_t last_known_position = 0;
+	
+	// do coarse jumps with first ball to estimate closest position
+	for(uint32_t i = 0 ; i < length; i = i + step)
+	{
+		if(break_table[i]) break;
+		last_known_position = i;
+	}
+	
+	// do fine steps to find exact position with second ball
+	for(uint32_t i = last_known_position ; i < length; ++i)
+	{
+		if(break_table[i]) break;
+		last_known_position = i;
+	}
+	
+	return last_known_position + 1;
+}
+
+int main(){
+	uint8_t array[ARRAY_LENGTH] = {0};
+	
+	print_array(array, ARRAY_LENGTH);
+	init_random(array, ARRAY_LENGTH);
+	print_array(array, ARRAY_LENGTH);
+	bubble_sort(array, ARRAY_LENGTH);
+	printf("---------- SORTED ----------\n");
+	print_array(array, ARRAY_LENGTH);
+	
+	uint32_t val_to_find = array[3];
+	
+	// int32_t val_index = binary_search(array, ARRAY_LENGTH, val_to_find);
+	// if(val_index < 0){
+	// 	printf("failed to find value\n");
+	// }
+	// else{
+	// 	printf("found values is %i, value we were searching is %i", array[val_index], val_to_find);
+	// }
+
+	//*****************************************************/
+	//============= TWO CRYSTAL BALLS PROBLEM =============/
+	//
+	// We have two crystal balls which dropped from
+	// certain high will break. After ball is broken
+	// you cannot use it again. But you can drop them
+	// as many times as you want from the safe high.
+	// Find most efficient way to find the point when the
+	// balls will break. 
+	//
+	//*****************************************************/
+	
+	// Init variables
+	
+	// just for convience of thinking 
+	// define maximal and minimal height.
+	// It is safe to drop balls at every
+	// value between 0 to critical_height 
+	// It is unsafe to drop balls in the
+	// range of values between critical_height
+	// and maximal_height
+	
+	uint32_t minimal_height = 0;
+	uint32_t maximal_height = 200;
+	
+	// define height from which balls will break
+	// everything equal or greater than this height
+	// will break the balls
+	
+	uint32_t critical_height = rand()%(maximal_height -  minimal_height) + minimal_height;
+	
+	uint8_t break_table[maximal_height];
+	
+	init_Nzeros_Mones(break_table, maximal_height, critical_height);
+	int32_t most_efficient_break_height = two_crystal_balls(break_table, maximal_height);
+	printf("found height: %i, height searched for: %i", most_efficient_break_height, critical_height);
+		
+	
+	return 1;
+};
+
+ 
