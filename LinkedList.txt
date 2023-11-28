@@ -1,0 +1,94 @@
+#import <stdlib.b> // for 
+#import <stdbool.h> // for random
+#import <stdint.h> // for (u)intX_t types
+
+typedef struct LL_node{
+	uint8_t value,
+	LL_node *prev,
+	LL_node	*next,
+} LL_node;
+
+struct LL{	
+	uint32_t length,
+	LL_node *last,
+	LL_node *first
+	
+};
+
+void init_LL(LL *ll)
+{
+	ll->length = 0;
+	ll->last   = NULL;
+	ll->first  = NULL;
+};	
+
+void insert(LL *ll, uint8_t value, uint32_t index)
+{
+	if(ll->length < index){
+		append(ll, value);	
+	}
+	
+	LL_node *node = malloc(sizeof(LL_node));
+	node->value = value;
+	node->prev = NULL;
+	node->next = ll->first;	
+	
+	for(uint32_t i = 0; i < index ; i++)
+	{
+		node->prev = node->next;
+		node->next = node->next->next;
+	}
+	
+	node->next->prev = node;
+	node->prev->next = node;
+	
+	ll->length++;
+};
+
+void remove(LL *ll, uint32_t index)
+{
+
+	LL_node *node = ll->first;
+	for(uint32_t i = 0; i < index ; i++)
+	{
+		node = node->next;
+	}
+	
+	node->prev->next = node->next;
+	node->next->prev = node->prev;
+	
+	free(node);
+};
+
+void append(LL *ll, uint8_t value)
+{
+	LL_node *node = malloc(sizeof(LL_node));
+	node->value = value;
+	node->next = NULL;
+	node->prev = ll->last;
+	node->prev->next = node;
+	
+	ll->length++;
+};
+
+void prepend(LL *ll, uint8_t value)
+{
+	LL_node *node = malloc(sizeof(LL_node));
+	node->value = value;
+	node->prev = NULL;
+	node->next = ll->first;
+	node->next->prev = node;
+	
+	ll->length++;	
+};
+
+uint8_t get(LL list, uint32_t index)
+{
+	LL_node *node = ll->first;
+	for(uint32_t i = 0; i < index ; i++)
+	{
+		node = node->next;
+	}
+	return node->value;
+};
+
