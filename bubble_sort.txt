@@ -33,11 +33,11 @@ void show_array(uint8_t* array, const uint32_t length)
 	
 }
 
-void swap(uint8_t*  a, uint8*_t b)
+void swap(uint8_t*  a, uint8_t* b)
 {
-	a = *(*a ^ *b);
-	b = *(*a ^ *b);
-	a = *(*a ^ *b); 
+    uint8_t tmp = *b;
+    *b = *a;
+    *a = tmp;
 }
 
 void bubble_sort(uint8_t* array, const uint32_t length)
@@ -49,7 +49,8 @@ void bubble_sort(uint8_t* array, const uint32_t length)
 		{
 			if(array[i] > array[i+1])
 			{
-				swap(&array[i], &array[i+1])
+				swap(&array[i],&array[i+1]);
+				sorted = false;
 			}
 		}
 	}while(!sorted);	
