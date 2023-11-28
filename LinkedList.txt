@@ -1,72 +1,81 @@
-#import <stdlib.b> // for 
-#import <stdbool.h> // for random
-#import <stdint.h> // for (u)intX_t types
+#include <stdlib.h> // for 
+#include <stdbool.h> // for random
+#include <stdint.h> // for (u)intX_t types
+#include <stdio.h> // for printf
 
-typedef struct LL_node{
-	uint8_t value,
-	LL_node *prev,
-	LL_node	*next,
-} LL_node;
-
-struct LL{	
-	uint32_t length,
-	LL_node *last,
-	LL_node *first
-	
+typedef struct LL_node LL_node;
+struct LL_node{
+	uint8_t value;
+	LL_node *prev;
+	LL_node	*next;
 };
+
+typedef struct LL{	
+	uint32_t length;
+	LL_node *last;
+	LL_node *first;
+	
+} LL;
 
 void init_LL(LL *ll)
 {
 	ll->length = 0;
 	ll->last   = NULL;
-	ll->first  = NULL;
+	ll->first  = ll->last;
 };	
 
-void insert(LL *ll, uint8_t value, uint32_t index)
+void rm_node(LL *ll, uint32_t index)
 {
-	if(ll->length < index){
-		append(ll, value);	
-	}
-	
-	LL_node *node = malloc(sizeof(LL_node));
-	node->value = value;
-	node->prev = NULL;
-	node->next = ll->first;	
-	
-	for(uint32_t i = 0; i < index ; i++)
-	{
-		node->prev = node->next;
-		node->next = node->next->next;
-	}
-	
-	node->next->prev = node;
-	node->prev->next = node;
-	
-	ll->length++;
-};
-
-void remove(LL *ll, uint32_t index)
-{
-
 	LL_node *node = ll->first;
 	for(uint32_t i = 0; i < index ; i++)
 	{
 		node = node->next;
 	}
-	
-	node->prev->next = node->next;
-	node->next->prev = node->prev;
-	
+
+    if(node->next != NULL)
+    {
+        node->next->prev = node->prev;
+    }
+    else
+    {
+        ll->last = node->prev;
+    }
+    
+    if(node->prev != NULL)
+    {
+        node->prev->next = node->next;
+    }
+    else
+    {
+        ll->first = node->next;
+    }
+
 	free(node);
+    ll->length--;
 };
 
 void append(LL *ll, uint8_t value)
 {
 	LL_node *node = malloc(sizeof(LL_node));
-	node->value = value;
+    node->value = value;
 	node->next = NULL;
-	node->prev = ll->last;
-	node->prev->next = node;
+	
+    if(ll->length == 0)
+    {
+        node->prev = NULL;
+        ll->last = node;
+        ll->first = node;
+    }
+    else
+    {
+        node->prev = ll->last;
+        ll->last = node;
+    }
+	
+    if(node->prev != NULL)
+    {
+	    node->prev->next = node;
+    }
 	
 	ll->length++;
 };
@@ -74,21 +83,129 @@ void append(LL *ll, uint8_t value)
 void prepend(LL *ll, uint8_t value)
 {
 	LL_node *node = malloc(sizeof(LL_node));
-	node->value = value;
+    node->value = value;
 	node->prev = NULL;
+
+    if(ll->length == 0)
+    {
+        node->next = NULL;
+        ll->last = node;
+        ll->first = node;
+    }
+    else
+    {
+        node->next = ll->first;
+        ll->first = node;
+    }
+    
 	node->next = ll->first;
+    ll->first = node;
+
 	node->next->prev = node;
+    if(node->next != NULL)
+    {
+	    node->next->prev = node;
+    }
 	
 	ll->length++;	
 };
 
-uint8_t get(LL list, uint32_t index)
+void insert(LL *ll, uint8_t value, uint32_t index)
 {
-	LL_node *node = ll->first;
+    if(ll->length < index || ll->length == 0){
+		append(ll, value);
+        return;	
+	}
+
+    LL_node *node = malloc(sizeof(LL_node));
+    node->value = value;
+    node->prev = NULL;
+    node->next = ll->first;	
+    
+    for(uint32_t i = 0; i < index ; i++)
+    {
+        node->prev = node->next;
+        node->next = node->next->next;
+        if(node->next == NULL)
+        {
+            break;
+        }
+    }
+    
+    if(node->next != NULL)
+    {
+        node->next->prev = node;
+    }
+    else
+    {
+        ll->last = node;
+    }
+    
+    if(node->prev != NULL)
+    {
+        node->prev->next = node;
+    }
+    else
+    {
+        ll->first = node;
+    }
+
+	ll->length++;
+};
+
+
+LL_node* get(LL ll, uint32_t index)
+{
+	if(index > ll.length) return NULL;
+     
+	LL_node *node = ll.first;
 	for(uint32_t i = 0; i < index ; i++)
 	{
 		node = node->next;
 	}
-	return node->value;
+	return node;
 };
 
+
+void show_list(LL ll){
+	
+	LL_node *node = ll.first;
+	printf("Displaying list of lenght %u\n",ll.length);
+	for(uint32_t i = 0 ; i < ll.length; ++i)
+	{
+		printf("[%u]=%u\n",i,node->value);
+		node = node->next;
+	}
+	printf("===============================\n");
+}
+
+
+int main()
+{	
+	/////////////////////////////////////
+	//
+	//==============TEST 1===============
+	//
+	/////////////////////////////////////
+	
+	LL list;
+	init_LL(&list);
+	insert(&list,4,3);
+	insert(&list,3,0);
+	insert(&list,2,1);
+	insert(&list,1,1);
+	show_list(list);
+
+	rm_node(&list,1);
+	show_list(list);
+
+    LL second_list;
+    init_LL(&second_list);
+    prepend(&second_list,3);	
+	show_list(second_list);
+
+
+
+
+	return 1;	
+}
