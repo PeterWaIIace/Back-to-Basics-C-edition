@@ -1,0 +1,82 @@
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdio.h>
+
+typedef struct element element;
+struct element{
+	uint8_t value;
+	element *prev; 	
+};
+
+
+typedef struct queue{
+
+	uint32_t length;
+	element *first;
+	element *last;
+
+}queue;
+
+
+void init(queue* q){
+	q->length = 0;
+	q->first = NULL;
+	q->last = NULL;
+}
+
+void push(queue* q, uint8_t value)
+{
+	element *el = malloc(sizeof(el));
+	el->value = value;
+	 
+	if(q->first == NULL){
+		q->first = el; 
+	}
+	
+	if(q->last == NULL)
+	{
+		q->last = el;
+	} 
+	else{
+		q->last->prev = el;
+		q->last = el;
+	}
+
+	q->length++;
+}
+
+
+bool isEmpty(const queue* q)
+{
+	return q->length <= 0;
+}
+
+void pop(queue* q){
+	element *el = q->first;
+	q->first = q->first->prev;
+	
+	free(el);
+	q->length--;
+}
+
+element* get(queue* q){
+	return q->first;
+}
+
+
+int main(){
+	queue Q;
+	init(&Q);
+	
+	push(&Q,3);
+	push(&Q,2);
+	push(&Q,1);
+	push(&Q,0);
+
+	while(!isEmpty(&Q)){
+		printf("value %u \n", get(&Q)->value);
+		pop(&Q);
+	}
+	return 1;
+}
