@@ -1,0 +1,200 @@
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
+
+//
+// ArrayList has reserved some space
+// It have tail, head, length 
+// You can iterate over it
+// You can enqueue, dequeue, push, pop and insert data
+// 
+// If you add more data than reserved space it should reserve another chunk
+// 
+//
+//
+//
+//
+
+typedef struct element{
+	uint8_t value;
+}element;
+
+typedef struct ArrayList ChunkArraylist;
+typedef struct ArrayList
+{
+	element* array;
+	uint32_t length;
+	uint32_t head;
+	uint32_t tail;
+
+	ChunkArraylist *next;
+	ChunkArraylist *prev;	
+} Arraylist;
+
+struct ArrayList* init(uint32_t size)
+{
+	struct ArrayList* al = malloc(sizeof(struct ArrayList));
+	al->array = malloc(sizeof(element) * size);
+	al->next = NULL;
+	al->prev = NULL;
+	al->head = 0;
+	al->tail = 0;
+}
+
+void deinit(struct ArrayList* al)
+{
+	if(al->next != NULL){
+		deinit(al->next);
+	}
+	
+	al->prev = NULL;
+	free(al->array);
+	free(al);
+}
+
+// if returning -1, then there is no shift carry value
+static element* unshift(struct ArrayList* al)
+{
+	element prev_value;
+	element swap = al->array[al->head];
+	if(al->next != NULL)
+	{
+		prev_value = *unshift(al->next);
+		al->array[al->head] = prev_value;
+	}
+	else
+	{
+		al->head--;
+	}
+	prev_value = swap;
+	
+	for(uint8_t i = al->head - 1; i > al->tail; i--){
+		swap = al->array[i];
+		al->array[i] = prev_value;
+		prev_value = swap;
+	}
+
+	if(al->tail > 0)
+	{
+		al->tail--;
+		al->array[al->tail] = prev_value;
+	}
+	else
+	{
+		return &prev_value; 
+	}
+	
+	return NULL;
+}
+
+static element *shift(struct ArrayList* al, element* carry_value)
+{
+	element next_value = *carry_value; 
+	element swap = al->array[al->tail];
+	if(carry_value != NULL)
+	{
+		al->array[al->tail] = *carry_value;
+	}
+	else{
+		al->tail++;
+	}
+	
+	for(uint8_t i = al->tail + 1; i < al->head; ++i)
+	{
+		swap = al->array[i];
+		al->array[i] = next_value;
+		next_value = swap;
+	}
+	
+	if(al->head < al->length - 1)
+	{
+		al->head++;
+		al->array[al->head] = next_value;
+	}
+	else
+	{
+		// shift carry over
+		if(al->next != NULL){
+			shift(al->next, &next_value);
+		}
+		else
+		{
+			return &next_value;
+		}
+	}
+	
+	// no value to carry over
+
+	return NULL;
+}
+
+void enqueue(struct ArrayList* al, uint8_t value)
+{
+	element *el = malloc(sizeof(element));
+	el->value = value;
+	shift(al,el);
+}
+
+element* dequeue(struct ArrayList* al)
+{
+	element *value = unshift(al);
+	return value;
+}
+
+void push(struct ArrayList* al, uint8_t value)
+{
+	if(al->head < al->length - 1)
+	{
+		al->head++;
+		al->array[al->head].value = value;
+	}
+	else
+	{
+		al->next = init(al->length);
+		push(al->next,value);
+	}	
+	
+}
+
+element* pop(struct ArrayList* al)
+{
+	element *ret_el;
+	if(al->head == al->length)
+	{
+		if(al->next != NULL){
+			ret_el = pop(al->next);
+		}
+		
+		if(ret_el == NULL)
+		{	
+			free(al->next);
+		}
+		else
+		{
+			return ret_el;
+		}
+	}
+	
+	
+	if(al->head >= al->tail)
+	{
+		
+		element el = al->array[al->head];
+		al->head--;
+		return &el;
+	}
+	
+	return NULL;
+}
+
+int main()
+{
+	int size = 32;
+	struct ArrayList* al = init(size);
+
+	for(int i = 0; i < size * 2; i++)
+	{
+		push(al,i);	
+	}	
+	return 1;
+}
