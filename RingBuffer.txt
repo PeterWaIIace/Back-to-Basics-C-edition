@@ -1,0 +1,158 @@
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+
+///////////////////////////////////////////////
+//
+//
+//		     RINGBUFFERs
+//
+//
+///////////////////////////////////////////////
+
+#define dataType int32_t
+
+typedef struct RingBuffer
+{
+	dataType * array;
+	uint32_t head;
+	uint32_t tail;
+	uint32_t size; // size -> because we are circling
+	uint32_t length;
+}RingBuffer;
+
+int init(RingBuffer* rb, uint32_t size)
+{
+	rb->array = malloc(sizeof(dataType) * size);
+	rb->size = size;
+	rb->length = 0;
+	rb->tail = 0;
+	rb->head = 0;
+	return 0;
+}
+
+int push(RingBuffer* rb, dataType value)
+{
+	if(rb == NULL) return -1;
+	
+	rb->array[rb->head] = value;
+	
+	rb->head = (rb->head + 1) % rb->size;
+	
+	if(rb->head == rb->tail)
+	{
+		rb->tail = (rb->tail + 1) % rb->size;
+	}
+	
+	rb->length = (rb->head - rb->tail) % rb->size; 
+	return 0;
+}
+
+int pop(RingBuffer* rb, dataType *retPtr)
+{
+	if(rb == NULL) return -1;
+	if(retPtr == NULL) return -1;
+	if(rb->length == 0) return -1;
+	
+	(*retPtr) = rb->array[rb->tail];
+	
+	rb->array[rb->tail] = 0x00;
+	rb->tail = (rb->tail + 1) % rb->size;
+	
+	if(rb->head + 1 == rb->tail)
+	{
+		rb->head = (rb->head + 1) % rb->size;
+	}
+	
+	rb->length = (rb->head - rb->tail) % rb->size;
+	return 0;
+}
+
+void show_buffer(RingBuffer* rb)
+{
+	printf("[");
+	for(uint32_t i = 0 ; i < rb->size; i++)
+	{
+	
+		printf("%i",rb->array[i]);
+		if(i < rb->size - 1)
+		{
+			printf(",");
+		};
+	
+	}
+	
+	printf("]\n");
+}
+
+uint32_t getLength(RingBuffer* rb)
+{
+	if(rb == NULL) return 0;
+	return rb->length; 
+}
+
+///////////////////////////////////////////////
+//
+//
+//		     TESTs
+//
+//
+///////////////////////////////////////////////
+
+
+void push_test(uint32_t length)
+{
+	RingBuffer rb;
+	init(&rb,5);
+	
+	for(uint32_t i = 0; i < length ; i++)
+	{
+		push(&rb,i);
+		show_buffer(&rb);
+	}
+}
+
+
+void push_and_pop_test(uint32_t length)
+{
+	RingBuffer rb;
+	init(&rb,10);
+	
+	for(uint32_t i = 0 ; i < length ; i++)
+	{
+		push(&rb,i+1);
+		
+		show_buffer(&rb);
+		if( i % 2 == 0)
+		{
+			int32_t val;
+			pop(&rb,&val);
+		}
+		show_buffer(&rb);
+		printf("-------------------------------------\n");
+	}
+	
+}
+
+void measure(void (*fn)(uint32_t length),uint32_t length)
+{
+	clock_t start = clock();
+	fn(length);
+	float execution_time = (clock() - start)/CLOCKS_PER_SEC;
+	printf("Number of elements: %u, time: %fs\n",length,execution_time);
+}
+
+int main()
+{
+
+	printf("=============PUSH============\n");
+	measure(push_test,10);
+	measure(push_test,15);
+
+	printf("=============PUSH&POP===========\n");
+	measure(push_and_pop_test,8);
+	measure(push_and_pop_test,16);
+
+}
