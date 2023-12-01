@@ -1,0 +1,346 @@
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <time.h>
+
+//
+// ArrayList has reserved some space
+// It have tail, head, length 
+// You can iterate over it
+// You can enqueue, dequeue, push, pop and insert data
+// 
+// If you add more data than reserved space it should reserve another chunk
+// 
+//
+//
+//
+//
+
+#define dataType int32_t
+
+typedef struct ArrayList
+{
+	dataType *array;
+	uint32_t head;
+	uint32_t tail;
+	uint32_t size;
+	uint32_t chunk;
+	uint32_t length;
+}ArrayList;
+
+int init(ArrayList * al, uint32_t size)
+{
+	if(al == NULL) return -1;
+	
+	printf("init\n");
+	al->array = malloc(sizeof(uint32_t) * size);
+	al->head  = 0;
+	al->tail  = 0;
+	al->length = 0;
+	al->size = size;
+	al->chunk = size;
+    	return 0;
+}
+
+int push(ArrayList * al, dataType value)
+{
+	if(al == NULL) return -1;
+	
+	if(al->head >= al->size - 1)
+	{
+		al->size = al->size + al->chunk; 
+		al->array = realloc(al->array,al->size* sizeof(uint32_t));
+    	}
+	al->array[++al->head] = value;
+	al->length = al->head - al->tail;
+    	return 0;
+}
+
+int pop(ArrayList * al, dataType *retPtr)
+{
+	if(al == NULL) return -1;
+	if(retPtr == NULL) return -1;
+	if(al->length == 0 || al->size == 0) return -1;
+	if(al->head < al->tail || al->head == 0) return -1;
+	
+	(*retPtr) = al->array[--al->head];
+	al->length = al->head - al->tail;
+	return 0;
+}
+
+int enqueue(ArrayList * al, dataType value)
+{
+	if(al == NULL) return -1;
+	
+	if(al->head >= al->size - 1)
+	{
+		al->size = al->size + al->chunk; 
+		al->array = realloc(al->array,al->size* sizeof(uint32_t));
+    	}
+    	
+	al->head++;
+	for(uint32_t i = al->head ; i > al->tail ; i--)
+	{
+		al->array[i] = al->array[i - 1]; 
+	}
+
+	al->array[al->tail] = value;
+	al->length = al->head - al->tail;
+	return 0;
+}
+
+int dequeue(ArrayList * al, dataType* retPtr)
+{
+	if(al == NULL) return -1;
+	if(retPtr == NULL) return -1;
+	if(al->length == 0 || al->size == 0) return -1;
+	
+	for(uint32_t i = al->tail ; i < al->head ; i++)
+	{
+		al->array[i] = al->array[i + 1]; 
+	}
+
+	(*retPtr) = al->array[al->tail];
+	al->head--;
+	al->length = al->head - al->tail;
+	return 0;
+}
+
+int insert(ArrayList * al, uint32_t index, dataType value)
+{
+	if(al == NULL) return -1;
+	if(al->length == 0 || al->size == 0) return -1;
+	if(index >= al->length) return -1;
+	
+	if(al->head >= al->size - 1)
+	{
+		al->size = al->size + al->chunk; 
+		al->array = realloc(al->array,al->size* sizeof(uint32_t));
+    	}
+    	
+	al->head++;
+	for(uint32_t i = al->head ; i > index ; i--)
+	{
+		al->array[i] = al->array[i - 1]; 
+	}
+
+	al->array[index] = value;
+	al->length = al->head - al->tail;
+	return 0;
+}
+
+int rm(ArrayList * al, uint32_t index, dataType* retPtr)
+{
+	if(al == NULL) return -1;
+	if(retPtr == NULL) return -1;
+	if(al->length == 0 || al->size == 0) return -1;
+	if(index >= al->length) return -1;
+	
+	(*retPtr) = al->array[index];
+	for(uint32_t i = index ; i < al->head ; i++)
+	{
+		al->array[i] = al->array[i + 1]; 
+	}
+	
+	al->head--;
+	al->length = al->head - al->tail;
+	return 0;
+}
+
+int get(ArrayList * al, uint32_t index, dataType *retPtr)
+{
+	if(al == NULL) return -1;
+	if(retPtr == NULL) return -1;
+	if(al->length == 0 || al->size == 0) return -1;
+	if(index >= al->length) return -1;
+	
+	(*retPtr) = al->array[index];
+	return 0;
+}
+
+
+////////////////////////////////////////////////////////////////
+//
+//
+// ========================= TESTS =============================
+//
+//
+////////////////////////////////////////////////////////////////
+
+
+void push_test(uint32_t length)
+{
+	int size = 32;
+	ArrayList al;
+    	init(&al,size);
+
+	for(int i = 0; i < length; i++)
+	{
+		push(&al,i);	
+	}	
+}
+
+void pop_test(uint32_t length)
+{
+	int size = 32;
+    	ArrayList al;
+    	init(&al,size);
+
+	for(int i = 0; i < length; i++)
+	{
+		push(&al,i);
+	}
+	
+	uint32_t headSize = al.head;
+	for(uint32_t i = 0; i < headSize; i++)
+	{
+		dataType val; 
+		if(pop(&al,&val) == -1)
+		{
+			printf("break got -1\n");
+		};
+	}	
+}
+
+void enqueue_test(uint32_t length)
+{
+	int size = 32;
+	ArrayList al;
+    	init(&al,size);
+
+	for(int i = 0; i < length; i++)
+	{
+		enqueue(&al,i);	
+	}	
+}
+
+void dequeue_test(uint32_t length)
+{
+	int size = 32;
+    	ArrayList al;
+    	init(&al,size);
+
+	for(int i = 0; i < length; i++)
+	{
+		enqueue(&al,i);
+	}
+	
+	uint32_t headSize = al.head;
+	for(uint32_t i = 0; i < headSize; i++)
+	{
+		dataType val; 
+		if(dequeue(&al,&val) == -1)
+		{
+			printf("break got -1\n");
+		};
+	}	
+}
+
+
+void insert_test(uint32_t length)
+{
+	int size = 32;
+	ArrayList al;
+    	init(&al,size);
+	
+	srand((int)(clock()));
+	for(int i = 0; i < length; i++)
+	{
+		uint32_t index = (rand() *al.length) % (al.head - 1);
+		insert(&al,index,i);	
+	}	
+}
+
+void remove_test(uint32_t length)
+{
+	int size = 32;
+    	ArrayList al;
+    	init(&al,size);
+
+	for(int i = 0; i < length; i++)
+	{
+		uint32_t index = (rand() *al.length) % (al.head - 1);
+		insert(&al,index,i);	
+	}
+	
+	uint32_t headSize = al.head;
+	for(uint32_t i = 0; i < headSize; i++)
+	{
+		uint32_t index = (rand() *al.length) % (al.head - 1);
+
+		dataType val; 
+		if(rm(&al,index,&val) == -1)
+		{
+			printf("break got -1\n");
+		};
+	}	
+}
+
+
+void measure(void (*func)(uint32_t length), uint32_t length)
+{
+	clock_t now = clock();
+	func(length);
+	float execution_time = (float)(clock() - now)/CLOCKS_PER_SEC;
+	printf("length %u time of execution: %fs\n",length,execution_time);
+}
+
+
+int main()
+{
+	printf("\n============PUSH=============\n");
+	
+	measure(push_test,1);
+	measure(push_test,10);
+	measure(push_test,100);
+	measure(push_test,1000);
+	measure(push_test,10000);
+	measure(push_test,100000);
+	
+	printf("\n==========PUSH&POP=============\n");
+	
+	measure(pop_test,1);
+	measure(pop_test,10);
+	measure(pop_test,100);
+	measure(pop_test,1000);
+	measure(pop_test,10000);
+	measure(pop_test,100000);
+	
+	printf("\n==========ENQUEUE=============\n");
+	
+	measure(enqueue_test,1);
+	measure(enqueue_test,10);
+	measure(enqueue_test,100);
+	measure(enqueue_test,1000);
+	measure(enqueue_test,10000);
+	measure(enqueue_test,100000);
+	
+	printf("\n==========ENQUEUE&DEQUEUE============\n");
+	
+	measure(dequeue_test,1);
+	measure(dequeue_test,10);
+	measure(dequeue_test,100);
+	measure(dequeue_test,1000);
+	measure(dequeue_test,10000);
+	measure(dequeue_test,100000);
+	
+	printf("\n===========INSERT===========\n");
+	
+	measure(insert_test,1);
+	measure(insert_test,10);
+	measure(insert_test,100);
+	measure(insert_test,1000);
+	measure(insert_test,10000);
+	measure(insert_test,100000);
+	
+	printf("\n=========INSERT&RM==============\n");
+	
+	measure(remove_test,1);
+	measure(remove_test,10);
+	measure(remove_test,100);
+	measure(remove_test,1000);
+	measure(remove_test,10000);
+	measure(remove_test,100000);
+	
+	return 1;
+}
