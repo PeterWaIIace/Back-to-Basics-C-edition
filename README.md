@@ -1,5 +1,5 @@
 # Back-to-Basics-C-edition
-Back to Basics C edition
+Back to Basics C edition. Written in TXT files to avoid using autosuggestions and completion. 
 
 
 # How to run:
