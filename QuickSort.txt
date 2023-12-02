@@ -1,0 +1,102 @@
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <time.h>
+
+/////////////////////////////////////////////////////////////
+//1.
+// [1,2,3,4,2,4,2,4,5,6,4,3] 
+// x0         p0            xn
+//2.
+//[1,2,3,4,2]    [2,4,5,6,4,3]
+//x0  p1    xn  x0    p2    xn
+//
+//  [1,2,3,4,2] <- p1 < p0 < p2 -> [2,4,5,6,4,3]
+//
+//...
+//
+//
+// pm < ... < p1 < p0 < p2 < ... < pn  <- sorted array - finish recursion here
+// it will give us back the sorted array
+/////////////////////////////////////////////////////////////
+
+#define RANDOM_RANGE 256
+#define LENGTH 25
+
+void swap(int32_t *first, int32_t *second)
+{
+	int32_t tmp = (*second);
+	(*second) = (*first);
+	(*first) = tmp ;
+}
+
+int QuickSort(int32_t *arr, uint32_t x0, uint32_t xn) {
+
+	if(x0 > xn) return -1;
+	if(xn - x0 <= 1) return -1;
+	
+	uint32_t pivot_index = xn - 1;
+	int32_t pivot = arr[pivot_index];
+	
+	int32_t j = x0 - 1;
+	for(int32_t i = x0 ; i < xn; i++)
+	{
+		if(arr[i] <= pivot)
+		{
+			j++;
+			swap(&arr[i],&arr[j]);
+			pivot_index = i; 
+		}
+	}
+	
+	if(j+1 < xn)
+	{
+		swap(&arr[pivot_index],&arr[j + 1]);
+		pivot_index = j + 1;	
+	}
+	
+	QuickSort(arr,x0,pivot_index);
+	QuickSort(arr,pivot_index,xn);
+	return 0;
+}
+
+void init_random(int32_t *array, uint32_t length)
+{
+	srand((int)(clock()));
+	
+	for(uint32_t i = 0 ; i < length ; i++)
+	{
+		array[i] = rand()%RANDOM_RANGE;
+	}
+}
+
+void show_array(int32_t* array, uint32_t length )
+{
+	printf("===========ARRAY=============\n");
+	printf("Length: %u \n[", length);
+	for(int32_t i = 0 ; i < length ; i++)
+	{
+		printf("%u",array[i]);
+		if(i < length - 1)
+		{
+			printf(", ");
+		}
+	}
+	printf("]\n");	
+	printf("============================\n");
+}
+
+int main()
+{
+	int32_t test_array[LENGTH];
+	init_random(test_array,LENGTH);
+	show_array(test_array, LENGTH);
+	
+	clock_t start = clock();
+	QuickSort(test_array,0,LENGTH);
+	float execution_time = (float)(clock() - start)/CLOCKS_PER_SEC;
+	printf("Sorting took: %fs\n",execution_time);
+	
+	show_array(test_array, LENGTH);
+	return 0;
+}
