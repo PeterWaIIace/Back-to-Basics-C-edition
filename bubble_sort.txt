@@ -3,8 +3,9 @@
 #include <stdint.h> // For uintN_t types
 #include <stdio.h> // for pintf
 #include <math.h> // for no reason 
+#include <time.h>
 
-#define LENGTH_ARRAY 20
+#define LENGTH_ARRAY 10000
 #define SEED_RANDOM 83
 
 void random_init(uint8_t* array, const uint32_t length)
@@ -60,7 +61,7 @@ int main()
 {
 	uint8_t r_array[LENGTH_ARRAY];
 	random_init(r_array,LENGTH_ARRAY);
-	show_array(r_array,LENGTH_ARRAY);
+	//show_array(r_array,LENGTH_ARRAY);
 	
 	//#####################################
 	//
@@ -68,8 +69,12 @@ int main()
 	//
 	//#####################################
 	
+	clock_t start = clock();
 	bubble_sort(r_array,LENGTH_ARRAY);
-	show_array(r_array,LENGTH_ARRAY);
+	float time_of_execution = (float)(clock() - start)/CLOCKS_PER_SEC;
+	printf("Sorting took %fs\n",time_of_execution);
+	
+	//show_array(r_array,LENGTH_ARRAY);
 	
 	return 1;
 }

@@ -1,0 +1,100 @@
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <math.h>
+
+#define LENGTH 11
+
+void init_with_false(bool *array, uint32_t length)
+{
+	for(uint32_t i = 0; i < length; i++)
+	{
+		array[i] = false;
+	}
+}
+
+bool find_sum_of_two(uint8_t *array, uint32_t length, uint8_t search_sum, uint8_t* first, uint8_t* second)
+{
+	uint32_t hash_map_size = 256;
+	bool seen[hash_map_size]; // this should be proper hashmap
+	init_with_false(seen,hash_map_size);
+	
+	for(uint32_t i = 0 ; i < length ; ++i)
+	{
+		uint8_t complement = search_sum - array[i];
+		
+		if(seen[complement] == true)
+		{   
+            (*first) = complement;
+			(*second) = array[i];
+            return true;
+		}
+		seen[array[i]] = true; 
+	}
+    return false;
+}
+
+int main()
+{
+	uint8_t sum = 25;
+	uint8_t array[LENGTH] = {0,4,3,2,5,7,5,3,2,7,9};
+	
+	uint8_t first, second;
+	
+	if(!find_sum_of_two(array, LENGTH, sum, &first, &second))
+    {
+        printf("didn't find sum");
+	    return -1;
+    }
+    printf("found first: %u second: %u", first, second); 
+    	
+	return 1;
+}
+
+// 1. NAIVE
+//
+//
+// array
+// for el_1 in array then 
+//	for el_2 in array then 
+//		if el_1 + el_2 == sum
+//			return True
+//
+// O(n^2)
+
+// 2. Try sorting 
+//
+// QuickSort - log(n)
+//
+// beginning of the array + ending of the array
+// i = begging 
+// j = ending
+//
+// while(i < j)
+//	if array[i] + array[j] == sum:
+//		return true		
+//	i++
+//	j--
+//
+// {0,2,2,3,3,4,5,5,7,7,9};
+// 0 + 9 =? 8 -> false, 2 + 7 =? 8 -> false, 2 + 7 =? 8 -> false, 3 + 5 == 8 -> True
+// N  
+//
+//
+// 0(n + log(n)) = O(n)
+
+// 3. Dumb Hashmap 
+// 
+// search_value = 8
+// bool/uint8_t seen[50] = {0,0,....,0};
+// 
+// for el in array:
+//	index_complement = search_value - el
+// 	if complement[index_complement] == True:
+// 		//it was seen
+//		return index_complement + el == search_value
+//	returning False  
+// O(n)
+
+
