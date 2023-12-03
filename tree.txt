@@ -1,0 +1,130 @@
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
+
+typedef struct Node Node;
+
+typedef struct Tree
+{
+	Node* top;
+	uint32_t size;
+}Tree;
+
+struct Node {
+	uint8_t value;
+	struct Node* parent;
+	struct Node* l_child;
+	struct Node* r_child;
+};
+
+Node* createNode(Node* parent, uint8_t value)
+{
+    	Node *node = malloc(sizeof(Node)); 
+
+	node->value = value;
+	node->parent = parent;
+	node->l_child = NULL;
+	node->r_child = NULL;
+	
+	return node;
+}
+
+void addNode(Node *parent, Node *node, uint8_t value)
+{
+	if(node == NULL) return;
+	
+	if(value <= node->value)
+	{	
+		if(node->l_child == NULL)
+		{
+			node->l_child = createNode(node, value); 
+		}
+		else
+		{
+			addNode(node,node->l_child, value);   
+		}
+	}
+	else
+	{
+		if(node->r_child == NULL)
+		{
+	       		node->r_child = createNode(node, value); 
+		}
+		else
+		{
+			addNode(node,node->r_child, value);
+		}
+    	}
+}
+
+void add(Tree *tree, uint8_t value)
+{
+	if(NULL == tree){return;}	
+	
+	if(NULL == tree->top)
+	{
+		tree->top = createNode(NULL, value);
+	}
+	else
+	{
+		addNode(NULL,tree->top,value);
+	}
+	tree->size++;
+	return;
+}
+
+// Bread First Traverse
+void breadth_walk(Node** nodes, uint32_t length, uint32_t tree_size)
+{
+	if(length == 0) return;
+
+    	Node *seen[length*2];
+	uint32_t seen_length = 0;
+	
+	for(uint32_t i = 0 ; i < length; i++)
+	{
+		if(nodes[i] != NULL)
+		{
+		    seen[seen_length++] = nodes[i]->l_child;
+		    seen[seen_length++] = nodes[i]->r_child;
+		    printf("[%u]", nodes[i]->value);
+		}
+		else{
+		    printf("[-]");
+		}
+	}
+	
+	printf("\n");
+	breadth_walk(seen,seen_length,tree_size);
+}
+
+void BFT(Tree tree)
+{
+    Node *seen[1] = {tree.top};
+    breadth_walk(seen,1,tree.size);
+}
+
+Tree createTree()
+{
+	Tree tree;
+	tree.top = NULL;
+	tree.size = 0;
+	return tree;
+}
+
+
+int main()
+{
+	Tree tree = createTree();
+	uint8_t array[12] = {3,2,4,2,4,5,1,9,5,3,2,6};
+	
+	for(uint32_t i = 0; i < 12 ; i++)
+	{
+		add(&tree,array[i]);
+	}
+
+    	BFT(tree);
+	return 1;
+}
+
+
